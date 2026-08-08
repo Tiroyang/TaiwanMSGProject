@@ -1,13 +1,20 @@
 // src/pages/HomePage.jsx
 
 import { ArrowRight, Layers } from "lucide-react";
+import AboutButton from "../components/about/AboutButton";
 
 export default function HomePage({
     error,
     onOpenList,
+    onOpenAbout,
 }) {
     return (
         <div className="min-h-screen relative overflow-hidden bg-slate-900">
+            <AboutButton
+                variant="home"
+                onClick={onOpenAbout}
+            />
+
             {/* 背景圖 */}
             <div
                 className="
@@ -42,10 +49,6 @@ export default function HomePage({
 
                         <span className="block h-1 w-48 bg-sky-500 mx-auto rounded-full mt-2" />
                     </h1>
-
-                    <p className="text-slate-400">
-                        與台灣相關的電影、影集與電子遊戲作品彙整。
-                    </p>
 
                     <button
                         type="button"

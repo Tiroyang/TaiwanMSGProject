@@ -4,6 +4,7 @@ import {
     useCallback,
     useEffect,
     useMemo,
+    useReducer,
     useState,
 } from "react";
 
@@ -38,9 +39,101 @@ import {
 import {
     cloneFilterState,
     createInitialFilters,
+    filterReducer,
 } from "../components/filters/filterState";
 
+const LIST_TAB_STORAGE_KEY =
+    "work-list-active-tab";
+
+const VALID_TABS = new Set([
+    "movies",
+    "series",
+    "games",
+]);
+
+function isSortKeyAvailableForTab(
+    sortKey,
+    tab
+) {
+    if (
+        sortKey ===
+        "episode_total_count"
+    ) {
+        return tab === "series";
+    }
+
+    if (sortKey === "runtime") {
+        return (
+            tab === "movies" ||
+            tab === "series"
+        );
+    }
+
+    return true;
+}
+
+function getInitialTab() {
+    const savedTab =
+        sessionStorage.getItem(
+            LIST_TAB_STORAGE_KEY
+        );
+
+    if (
+        savedTab &&
+        VALID_TABS.has(savedTab)
+    ) {
+        return savedTab;
+    }
+
+    return "movies";
+}
+
 export function useWorkList(works) {
+    const [activeTab, setActiveTab] =
+        useState(getInitialTab());
+
+    useEffect(() => {
+        sessionStorage.setItem(
+            LIST_TAB_STORAGE_KEY,
+            activeTab
+        );
+    }, [activeTab]);
+
+    const tabCounts = useMemo(() => {
+        const counts = {
+            movies: 0,
+            series: 0,
+            games: 0,
+        };
+
+        for (const work of works || []) {
+            const key =
+                work?.work_type_key;
+
+            if (
+                Object.prototype.hasOwnProperty.call(
+                    counts,
+                    key
+                )
+            ) {
+                counts[key] += 1;
+            }
+        }
+
+        return counts;
+    }, [works]);
+
+    const tabWorks = useMemo(() => {
+        return (works || []).filter(
+            (work) =>
+                work?.work_type_key ===
+                activeTab
+        );
+    }, [
+        works,
+        activeTab,
+    ]);
+
     const [displayMode, setDisplayMode] =
         useState("grid");
 
@@ -66,20 +159,72 @@ export function useWorkList(works) {
     const [filterOpen, setFilterOpen] =
         useState(false);
 
+    const changeTab =
+        useCallback(
+            (nextTab) => {
+                if (
+                    !VALID_TABS.has(nextTab)
+                ) {
+                    return;
+                }
+
+                if (
+                    nextTab === activeTab
+                ) {
+                    return;
+                }
+
+                sessionStorage.setItem(
+                    LIST_TAB_STORAGE_KEY,
+                    nextTab
+                );
+
+                setActiveTab(nextTab);
+
+                setSortMenuOpen(false);
+                setFilterOpen(false);
+                setHoveredWorkId(null);
+
+                if (
+                    !isSortKeyAvailableForTab(
+                        sortKey,
+                        nextTab
+                    )
+                ) {
+                    setSortKey(
+                        "release_date_simp"
+                    );
+
+                    setSortDir("desc");
+                }
+            },
+            [
+                activeTab,
+                sortKey,
+            ]
+        );
+
     const [
         dateFormatWarning,
         setDateFormatWarning,
     ] = useState(false);
 
-    const [filters, setFilters] = useState(
-        () => createInitialFilters()
+    const [
+        filters,
+        dispatchFilters,
+    ] = useReducer(
+        filterReducer,
+        undefined,
+        createInitialFilters
     );
 
     const [
         tempFilters,
-        setTempFilters,
-    ] = useState(
-        () => createInitialFilters()
+        dispatchTempFilters,
+    ] = useReducer(
+        filterReducer,
+        undefined,
+        createInitialFilters
     );
 
     useEffect(() => {
@@ -87,17 +232,24 @@ export function useWorkList(works) {
             return;
         }
 
-        setTempFilters(
-            cloneFilterState(filters)
-        );
-    }, [filterOpen, filters]);
+        dispatchTempFilters({
+            type: "REPLACE",
+            value: filters,
+        });
+    }, [
+        filterOpen,
+        filters,
+    ]);
 
     const filteredWorks = useMemo(() => {
         return applyAdvancedFilters(
-            works,
+            tabWorks,
             filters
         );
-    }, [works, filters]);
+    }, [
+        tabWorks,
+        filters,
+    ]);
 
     const searchedWorks = useMemo(() => {
         return applySearchFilter(
@@ -122,36 +274,45 @@ export function useWorkList(works) {
     ]);
 
     const genreCountMap = useMemo(
-        () => buildGenreCountMap(works),
-        [works]
+        () => buildGenreCountMap(tabWorks),
+        [tabWorks]
     );
 
     const statusCountsTotal = useMemo(
-        () => buildStatusCountList(works),
-        [works]
+        () => buildStatusCountList(tabWorks),
+        [tabWorks]
     );
 
     const countryCountsTotal = useMemo(
         () =>
             buildCountListFromCommaField(
-                works,
+                tabWorks,
                 "countries"
             ),
-        [works]
+        [tabWorks]
     );
 
     const genreCountsTotal = useMemo(
         () =>
             buildCountListFromCommaField(
-                works,
+                tabWorks,
                 "genre_tags"
             ),
-        [works]
+        [tabWorks]
+    );
+
+    const pricingModelCountsTotal = useMemo(
+        () =>
+            buildCountListFromCommaField(
+                tabWorks,
+                "pricing_model"
+            ),
+        [tabWorks]
     );
 
     const langCountsTotal = useMemo(
-        () => buildLangCounts(works),
-        [works]
+        () => buildLangCounts(tabWorks),
+        [tabWorks]
     );
 
     const statusCountsCurrent = useMemo(
@@ -176,6 +337,15 @@ export function useWorkList(works) {
             buildCountListFromCommaField(
                 filteredWorks,
                 "genre_tags"
+            ),
+        [filteredWorks]
+    );
+
+    const pricingModelCountsCurrent = useMemo(
+        () =>
+            buildCountListFromCommaField(
+                filteredWorks,
+                "pricing_model"
             ),
         [filteredWorks]
     );
@@ -224,6 +394,18 @@ export function useWorkList(works) {
         ]
     );
 
+    const pricingModelCounts = useMemo(
+        () =>
+            mergeCounts(
+                pricingModelCountsTotal,
+                pricingModelCountsCurrent
+            ),
+        [
+            pricingModelCountsTotal,
+            pricingModelCountsCurrent,
+        ]
+    );
+
     const langCounts = useMemo(
         () =>
             mergeLangCounts(
@@ -242,9 +424,9 @@ export function useWorkList(works) {
 
     const resetAllFilters =
         useCallback(() => {
-            setTempFilters(
-                createInitialFilters()
-            );
+            dispatchTempFilters({
+                type: "RESET",
+            });
 
             setDateFormatWarning(false);
         }, []);
@@ -274,13 +456,15 @@ export function useWorkList(works) {
                 end: result.end,
             };
 
-            setTempFilters(
-                cloneFilterState(nextFilters)
-            );
+            dispatchTempFilters({
+                type: "REPLACE",
+                value: nextFilters,
+            });
 
-            setFilters(
-                cloneFilterState(nextFilters)
-            );
+            dispatchFilters({
+                type: "REPLACE",
+                value: nextFilters,
+            });
 
             if (shouldClose) {
                 setFilterOpen(false);
@@ -333,6 +517,12 @@ export function useWorkList(works) {
         }, []);
 
     return {
+        activeTab,
+        setActiveTab,
+        tabCounts,
+        tabWorks,
+        changeTab,
+
         displayMode,
         toggleDisplayMode,
 
@@ -358,7 +548,7 @@ export function useWorkList(works) {
 
         filters,
         tempFilters,
-        setTempFilters,
+        dispatchTempFilters,
 
         dateFormatWarning,
         resetAllFilters,
@@ -369,11 +559,12 @@ export function useWorkList(works) {
         searchedWorks,
         sortedWorks,
 
-        genreCountMap,
+        genreCountMap,  
 
         statusCounts,
         countryCounts,
         genreCounts,
+        pricingModelCounts,
         langCounts,
     };
 }

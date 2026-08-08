@@ -11,6 +11,7 @@ export default function SimpleMarkdown({
         <div
             className={[
                 "markdown-body",
+                "text-slate-200", // 新增這行
                 className,
             ].join(" ")}
         >

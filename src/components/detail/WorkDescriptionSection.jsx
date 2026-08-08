@@ -11,7 +11,7 @@ export default function WorkDescriptionSection({
     return (
         <DetailSection
             title="中文簡介"
-            icon={<FileText size={14} />}
+            icon={<FileText size={18} />}
         >
             {description ? (
                 <SimpleMarkdown text={description} />

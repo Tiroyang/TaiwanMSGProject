@@ -70,28 +70,30 @@ export default function WorkGridCard({
                 )}
 
                 <div className="absolute left-2 top-2">
+                    {/*
+                        <span
+                            className={`rounded border px-2 py-1 text-xs backdrop-blur ${getTypeClass(
+                                work
+                            )}`}
+                        >
+                            {work.work_type || "未知"}
+                        </span>
+                    */}
+                </div>
+
+                <div className="absolute right-2 top-2">
                     <span
-                        className={`rounded border px-2 py-1 text-xs backdrop-blur ${getStatusClass(
+                        className={`rounded border px-2 py-1 text-sm backdrop-blur ${getStatusClass(
                             work.status
                         )}`}
                     >
                         {work.status || "未知"}
                     </span>
                 </div>
-
-                <div className="absolute right-2 top-2">
-                    <span
-                        className={`rounded border px-2 py-1 text-xs backdrop-blur ${getTypeClass(
-                            work
-                        )}`}
-                    >
-                        {work.work_type || "未知"}
-                    </span>
-                </div>
             </div>
 
             <div className="flex flex-grow flex-col p-3">
-                <h3 className="mb-1 line-clamp-2 text-sm font-bold text-white">
+                <h3 className="mb-1 line-clamp-2 text-lg font-semibold text-white">
                     {work.title_zh || "未知"}
 
                     {work.work_type_key ===
@@ -99,16 +101,16 @@ export default function WorkGridCard({
                         work.title_original &&
                         work.title_original !==
                         work.title_zh && (
-                            <span className="ml-1 text-xs font-normal text-slate-400">
+                            <span className="ml-1 text-sm font-normal text-slate-400">
                                 ({work.title_original})
                             </span>
                         )}
                 </h3>
 
                 <div className="mt-auto space-y-1">
-                    <div className="flex items-center text-xs text-sky-400">
+                    <div className="flex items-center text-sm text-sky-400">
                         <Calendar
-                            size={12}
+                            size={14}
                             className="mr-1"
                         />
 
@@ -117,9 +119,9 @@ export default function WorkGridCard({
                         )}
                     </div>
 
-                    <div className="flex items-center text-xs text-slate-400">
+                    <div className="flex items-center text-sm text-slate-400">
                         <Globe
-                            size={12}
+                            size={14}
                             className="mr-1"
                         />
 

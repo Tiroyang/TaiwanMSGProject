@@ -171,7 +171,7 @@ export default function HoverScrollTags({
                     return (
                         <span
                             key={`${tag}-${index}`}
-                            className="text-[10px] px-1.5 py-0.5 bg-slate-800 text-slate-300 rounded border border-slate-700"
+                            className="text-[0.8rem] px-1.5 py-0.5 bg-slate-800 text-slate-300 rounded border border-slate-700"
                         >
                             {view.label}
                         </span>

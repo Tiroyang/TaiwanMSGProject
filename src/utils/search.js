@@ -18,6 +18,7 @@ const SEARCHABLE_FIELDS = [
     "runtime",
     "episode_total_count",
     "genre_tags",
+    "pricing_model",
     "supported_languages",
     "description_zh",
     "description_en",

@@ -1,0 +1,23 @@
+Run "npm run dev" in cmd and open the link.
+
+To Update:
+	git status
+	git add .
+	git commit -m "版本內容"
+		feat: 新增功能
+		fix: 修復錯誤
+		docs: 僅修改文件
+		style: 修改程式碼格式 (不影響邏輯，如空格、分號)
+		refactor: 重構程式碼 (既非修 bug 也非加功能)
+		perf: 提升效能的改動
+		test: 增加或修改測試案例
+		chore: 建置流程或輔助工具的變動
+	Version Control
+		npm version patch
+			+0.0.1
+		npm version minor
+			+0.1.0
+		npm version major
+			+1.0.0
+	git push
+	git push --tags

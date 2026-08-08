@@ -73,10 +73,6 @@ export function matchTriTags(items, triMap) {
 
 export function applyAdvancedFilters(works, filters) {
     return (works || []).filter((work) => {
-        if (filters.hideTypes?.[work.work_type_key]) {
-            return false;
-        }
-
         if (
             filters.hideNoMainImage &&
             !work.main_image_url
@@ -158,7 +154,10 @@ export function applyAdvancedFilters(works, filters) {
             return false;
         }
 
-        const genres = parseCommaList(work.genre_tags);
+        const genres =
+            parseCommaList(
+                work.genre_tags
+            );
 
         if (
             !matchTriTags(
@@ -169,46 +168,80 @@ export function applyAdvancedFilters(works, filters) {
             return false;
         }
 
-        if (filters.langMode === "mv") {
-            if (work.work_type_key === "games") {
-                return false;
-            }
-
-            const parsed = parseSupportedLanguages(
-                work.supported_languages
-            );
-
-            const branch = filters.langMV.active;
-            const languages = parsed.mv[branch] || [];
-            const hidden =
-                filters.langMV.hidden[branch] || new Set();
+        if (
+            work.work_type_key ===
+            "games"
+        ) {
+            const pricingModels =
+                parseCommaList(
+                    work.pricing_model
+                );
 
             if (
-                languages.some((language) =>
-                    hidden.has(language)
+                !matchTriTags(
+                    pricingModels,
+                    filters.pricingModelTri
                 )
             ) {
                 return false;
             }
         }
 
-        if (filters.langMode === "gm") {
-            if (work.work_type_key !== "games") {
-                return false;
-            }
-
-            const parsed = parseSupportedLanguages(
+        const parsedLanguages =
+            parseSupportedLanguages(
                 work.supported_languages
             );
 
-            const branch = filters.langGM.active;
-            const languages = parsed.gm[branch] || [];
-            const hidden =
-                filters.langGM.hidden[branch] || new Set();
+        if (
+            work.work_type_key ===
+            "movies" ||
+            work.work_type_key ===
+            "series"
+        ) {
+            const branch =
+                filters.langMV.active;
+
+            const workLanguages =
+                parsedLanguages.mv[
+                branch
+                ] || [];
+
+            const triMap =
+                filters.langMV.tri[
+                branch
+                ] || new Map();
 
             if (
-                languages.some((language) =>
-                    hidden.has(language)
+                !matchTriTags(
+                    workLanguages,
+                    triMap
+                )
+            ) {
+                return false;
+            }
+        }
+
+        if (
+            work.work_type_key ===
+            "games"
+        ) {
+            const branch =
+                filters.langGM.active;
+
+            const workLanguages =
+                parsedLanguages.gm[
+                branch
+                ] || [];
+
+            const triMap =
+                filters.langGM.tri[
+                branch
+                ] || new Map();
+
+            if (
+                !matchTriTags(
+                    workLanguages,
+                    triMap
                 )
             ) {
                 return false;

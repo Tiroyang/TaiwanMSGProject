@@ -7,7 +7,8 @@ import WorkListFooter from "../components/works/WorkListFooter";
 import WorkListHeader from "../components/works/WorkListHeader";
 import WorkListToolbar from "../components/works/WorkListToolbar";
 import WorkResults from "../components/works/WorkResults";
-
+import WorkTypeTabs from "../components/works/WorkTypeTabs";
+    
 import {
     useWorkList,
 } from "../hooks/useWorkList";
@@ -18,12 +19,16 @@ export default function WorkListPage({
     error,
     onBack,
     onSelectWork,
+    onOpenAbout,
 }) {
     const list = useWorkList(works);
 
     return (
         <div className="min-h-screen bg-slate-950 pb-10">
             <WorkListHeader
+                activeTab={
+                    list.activeTab
+                }
                 resultCount={
                     list.sortedWorks.length
                 }
@@ -34,6 +39,21 @@ export default function WorkListPage({
                 onToggleDisplayMode={
                     list.toggleDisplayMode
                 }
+                onOpenAbout={
+                    onOpenAbout
+                }
+            />
+
+            <WorkTypeTabs
+                value={
+                    list.activeTab
+                }
+                counts={
+                    list.tabCounts
+                }
+                onChange={
+                    list.changeTab
+                }
             />
 
             <WorkListError
@@ -41,6 +61,9 @@ export default function WorkListPage({
             />
 
             <WorkListToolbar
+                activeTab={
+                    list.activeTab
+                }
                 searchInput={
                     list.searchInput
                 }
@@ -95,9 +118,14 @@ export default function WorkListPage({
             <WorkListFooter />
 
             <FilterModal
-                open={list.filterOpen}
-                onClose={
-                    list.closeFilter
+                activeTab={
+                    list.activeTab
+                }
+                tempFilters={
+                    list.tempFilters
+                }
+                dispatch={
+                    list.dispatchTempFilters
                 }
                 statusCounts={
                     list.statusCounts
@@ -108,14 +136,11 @@ export default function WorkListPage({
                 genreCounts={
                     list.genreCounts
                 }
+                pricingModelCounts={
+                    list.pricingModelCounts
+                }
                 langCounts={
                     list.langCounts
-                }
-                tempFilters={
-                    list.tempFilters
-                }
-                setTempFilters={
-                    list.setTempFilters
                 }
                 dateFormatWarning={
                     list.dateFormatWarning
@@ -128,6 +153,12 @@ export default function WorkListPage({
                 }
                 onConfirm={
                     list.confirmFilters
+                }
+                open={
+                    list.filterOpen
+                }
+                onClose={
+                    list.closeFilter
                 }
                 tagMap={tagMap}
             />

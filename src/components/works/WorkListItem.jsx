@@ -25,7 +25,7 @@ export default function WorkListItem({
 }) {
     return (
         <article
-            onClick={onClick}
+            onClick={onClick}   
             className="relative flex cursor-pointer items-stretch gap-4 rounded-xl border border-slate-800 bg-slate-900/60 p-3 transition-all hover:border-sky-500/50"
         >
             <div className="group relative shrink-0">
@@ -64,6 +64,7 @@ export default function WorkListItem({
                     {work.status || "未知"}
                 </span>
 
+                {/* 
                 <span
                     className={`rounded border px-2 py-1 text-xs backdrop-blur ${getTypeClass(
                         work
@@ -71,6 +72,7 @@ export default function WorkListItem({
                 >
                     {work.work_type || "未知"}
                 </span>
+                */}
             </div>
 
             <div className="min-w-0 flex-1">
@@ -96,7 +98,7 @@ export default function WorkListItem({
 
                     {work.countries && (
                         <span className="truncate">
-                            國家／地區：
+                            國家/地區：
                             {splitToZhList(
                                 formatCountriesSorted(
                                     work.countries
@@ -127,14 +129,25 @@ export default function WorkListItem({
 function WorkListMetadata({ work }) {
     return (
         <div className="hidden w-[220px] shrink-0 flex-col justify-start gap-2 lg:flex">
-            <MetadataLine
-                label="片長"
-                value={
-                    work.runtime
-                        ? `${work.runtime} 分鐘`
-                        : ""
-                }
-            />
+            {work.work_type_key === "games" ? (
+                <MetadataLine
+                    label="收費模式"
+                    value={work.pricing_model
+                        ? splitToZhList(
+                            work.pricing_model
+                        )
+                        : null}
+                />
+            ) : (
+                <MetadataLine
+                    label="片長"
+                    value={
+                        work.runtime
+                            ? `${work.runtime} 分鐘`
+                            : ""
+                    }
+                />
+            )}
 
             <MetadataLine
                 label={

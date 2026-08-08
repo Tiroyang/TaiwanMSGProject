@@ -26,7 +26,7 @@ export default function WorkLanguageSection({
 
     return (
         <DetailSection title="語言支援">
-            <div className="space-y-2 text-sm">
+            <div className="space-y-2 text-base">
                 {isGame ? (
                     <>
                         <InfoRow

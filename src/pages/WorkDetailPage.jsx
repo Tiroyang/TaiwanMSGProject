@@ -23,6 +23,7 @@ export default function WorkDetailPage({
     tagMap,
     genreCountMap,
     onBack,
+    onOpenAbout,
 }) {
     const gallery =
         useImageGallery(work);
@@ -63,6 +64,9 @@ export default function WorkDetailPage({
         <div className="min-h-screen bg-slate-950 pb-20">
             <WorkDetailHeader
                 onBack={onBack}
+                onOpenAbout={
+                    onOpenAbout
+                }
             />
 
             <WorkHero
@@ -71,7 +75,7 @@ export default function WorkDetailPage({
                 onOpenImage={gallery.open}
             />
 
-            <main className="relative z-10 mt-6 grid grid-cols-1 gap-4 px-5 text-sm">
+            <main className="relative z-10 mt-6 grid grid-cols-1 gap-4 px-5 text-base">
                 <WorkBasicInfo
                     work={work}
                     tagMap={tagMap}

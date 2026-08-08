@@ -1,6 +1,11 @@
 ﻿// src/app/App.jsx
 
-import { useMemo } from "react";
+import {
+    useMemo,
+    useState,
+} from "react";
+
+import AboutModal from "../components/about/AboutModal";
 
 import HomePage from "../pages/HomePage";
 import WorkDetailPage from "../pages/WorkDetailPage";
@@ -16,6 +21,19 @@ import {
 } from "../utils/counts";
 
 export default function App() {
+    const [
+        aboutOpen,
+        setAboutOpen,
+    ] = useState(false);
+
+    const openAbout = () => {
+        setAboutOpen(true);
+    };
+
+    const closeAbout = () => {
+        setAboutOpen(false);
+    };
+
     const {
         view,
         selectedWorkId,
@@ -53,41 +71,67 @@ export default function App() {
         [works]
     );
 
+    let page;
+
     if (view === "home") {
-        return (
+        page = (
             <HomePage
                 error={error}
                 onOpenList={goList}
+                onOpenAbout={() =>
+                    setAboutOpen(true)
+                }
             />
         );
-    }
-
-    if (
+    } else if (
         loading &&
         works.length === 0
     ) {
-        return <LoadingScreen />;
-    }
-
-    if (view === "detail") {
-        return (
+        page = <LoadingScreen />;
+    } else if (
+        view === "detail"
+    ) {
+        page = (
             <WorkDetailPage
                 work={selectedWork}
                 works={works}
                 tagMap={tagMap}
-                genreCountMap={genreCountMap}
+                genreCountMap={
+                    genreCountMap
+                }
                 onBack={backToList}
+                onOpenAbout={() =>
+                    setAboutOpen(true)
+                }
+            />
+        );
+    } else {
+        page = (
+            <WorkListPage
+                works={works}
+                tagMap={tagMap}
+                error={error}
+                onBack={goHome}
+                onSelectWork={
+                    goToWork
+                }
+                onOpenAbout={() =>
+                    setAboutOpen(true)
+                }
             />
         );
     }
 
     return (
-        <WorkListPage
-            works={works}
-            tagMap={tagMap}
-            error={error}
-            onBack={goHome}
-            onSelectWork={goToWork}
-        />
+        <>
+            {page}
+
+            <AboutModal
+                open={aboutOpen}
+                onClose={() =>
+                    setAboutOpen(false)
+                }
+            />
+        </>
     );
 }

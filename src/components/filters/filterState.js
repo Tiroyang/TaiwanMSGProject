@@ -2,12 +2,6 @@
 
 export function createInitialFilters() {
     return {
-        hideTypes: {
-            movies: false,
-            series: false,
-            games: false,
-        },
-
         statusMode: "all",
         statusHidden: new Set(),
 
@@ -23,15 +17,13 @@ export function createInitialFilters() {
 
         genreTri: new Map(),
 
-        langMode: "none",
-
         langMV: {
             active: "orig",
 
-            hidden: {
-                orig: new Set(),
-                dub: new Set(),
-                sub: new Set(),
+            tri: {
+                orig: new Map(),
+                dub: new Map(),
+                sub: new Map(),
             },
 
             preset: {
@@ -44,10 +36,10 @@ export function createInitialFilters() {
         langGM: {
             active: "sub",
 
-            hidden: {
-                sub: new Set(),
-                voice: new Set(),
-                ui: new Set(),
+            tri: {
+                sub: new Map(),
+                voice: new Map(),
+                ui: new Map(),
             },
 
             preset: {
@@ -61,28 +53,94 @@ export function createInitialFilters() {
     };
 }
 
-/* Reducer */
+
+/* =========================================================
+   Reducer
+========================================================= */
+
 export function filterReducer(state, action) {
     switch (action.type) {
+        /* =========================
+           全部
+        ========================= */
+
         case "RESET":
             return createInitialFilters();
 
         case "REPLACE":
-            return action.value;
+            return cloneFilterState(action.value);
 
-        case "TOGGLE_TYPE":
+        /* =========================
+           狀態
+        ========================= */
+
+        case "SET_STATUS_ALL":
             return {
                 ...state,
-                hideTypes: {
-                    ...state.hideTypes,
-                    [action.key]:
-                        !state.hideTypes[action.key],
-                },
+
+                statusMode: "all",
+                statusHidden: new Set(),
             };
+
+        case "SET_STATUS_NONE":
+            return {
+                ...state,
+
+                statusMode: "none",
+
+                statusHidden: new Set(
+                    action.names || []
+                ),
+            };
+
+        case "TOGGLE_STATUS": {
+            const nextHidden = new Set(
+                state.statusHidden
+            );
+
+            if (
+                nextHidden.has(action.status)
+            ) {
+                nextHidden.delete(
+                    action.status
+                );
+            } else {
+                nextHidden.add(
+                    action.status
+                );
+            }
+
+            const totalCount =
+                action.totalCount || 0;
+
+            let statusMode = "custom";
+
+            if (nextHidden.size === 0) {
+                statusMode = "all";
+            } else if (
+                totalCount > 0 &&
+                nextHidden.size === totalCount
+            ) {
+                statusMode = "none";
+            }
+
+            return {
+                ...state,
+
+                statusHidden: nextHidden,
+                statusMode,
+            };
+        }
+
+
+        /* =========================
+           日期
+        ========================= */
 
         case "SET_DATE_START":
             return {
                 ...state,
+
                 dateRange: {
                     ...state.dateRange,
                     start: action.value,
@@ -92,6 +150,7 @@ export function filterReducer(state, action) {
         case "SET_DATE_END":
             return {
                 ...state,
+
                 dateRange: {
                     ...state.dateRange,
                     end: action.value,
@@ -101,73 +160,85 @@ export function filterReducer(state, action) {
         case "SET_HIDE_NO_DATE":
             return {
                 ...state,
+
                 dateRange: {
                     ...state.dateRange,
-                    hideNoDate: action.value,
+
+                    hideNoDate:
+                        action.value,
                 },
             };
 
-        case "TOGGLE_STATUS": {
-            const next = new Set(
-                state.statusHidden
-            );
-
-            if (next.has(action.status)) {
-                next.delete(action.status);
-            } else {
-                next.add(action.status);
-            }
-
+        case "RESET_DATE":
             return {
                 ...state,
-                statusHidden: next,
-                statusMode: action.mode || "custom",
-            };
-        }
 
-        case "SET_STATUS_ALL":
-            return {
-                ...state,
-                statusMode: "all",
-                statusHidden: new Set(),
+                dateRange: {
+                    start: "",
+                    end: "",
+                    hideNoDate: false,
+                },
             };
 
-        case "SET_STATUS_NONE":
-            return {
-                ...state,
-                statusMode: "none",
-                statusHidden: new Set(
-                    action.names
-                ),
-            };
+
+        /* =========================
+           國家
+        ========================= */
 
         case "SET_COUNTRY_TRI": {
             const next = new Map(
                 state.countryTri
             );
 
-            next.set(
-                action.name,
-                action.value
-            );
+            if (action.value === "show") {
+                next.delete(action.name);
+            } else {
+                next.set(
+                    action.name,
+                    action.value
+                );
+            }
 
             return {
                 ...state,
+
                 countryTri: next,
                 countryPreset: "custom",
+                countryCoMode: false,
             };
         }
 
         case "SET_COUNTRY_STATE":
             return {
                 ...state,
-                countryTri:
-                    action.countryTri,
+
+                countryTri: new Map(
+                    action.countryTri || []
+                ),
+
                 countryPreset:
-                    action.countryPreset,
+                    action.countryPreset ??
+                    "none",
+
                 countryCoMode:
-                    action.countryCoMode,
+                    Boolean(
+                        action.countryCoMode
+                    ),
             };
+
+        case "RESET_COUNTRY":
+            return {
+                ...state,
+
+                countryTri: new Map(),
+                countryPreset: "none",
+                countryCoMode: false,
+            };
+
+
+        /* =========================
+           類型 / Genre
+        ========================= */
 
         case "SET_GENRE_TRI": {
             const next = new Map(
@@ -189,67 +260,335 @@ export function filterReducer(state, action) {
             };
         }
 
-        case "SET_GENRE_MAP":
+        /* =========================
+            收費模式 / Pricing Model
+            遊戲專用
+        ========================= */
+
+        case "SET_PRICING_MODEL_TRI": {
+            const next = new Map(
+                state.pricingModelTri
+            );
+
+            if (action.value === "show") {
+                next.delete(action.name);
+            } else {
+                next.set(
+                    action.name,
+                    action.value
+                );
+            }
+
             return {
                 ...state,
-                genreTri: action.value,
+                pricingModelTri: next,
+            };
+        }
+
+        case "SET_PRICING_MODEL_ALL":
+            return {
+                ...state,
+                pricingModelTri: new Map(),
             };
 
-        case "SET_LANG_MODE":
+        case "SET_PRICING_MODEL_NONE": {
+            const next = new Map();
+
+            for (
+                const name of action.names || []
+            ) {
+                next.set(
+                    name,
+                    "hide"
+                );
+            }
+
             return {
                 ...state,
-                langMode: action.value,
+                pricingModelTri: next,
             };
+        }
+
+        case "RESET_PRICING_MODEL":
+            return {
+                ...state,
+                pricingModelTri: new Map(),
+            };
+
+        case "SET_GENRE_ALL":
+            return {
+                ...state,
+                genreTri: new Map(),
+            };
+
+        case "SET_GENRE_NONE": {
+            const next = new Map();
+
+            for (
+                const name of action.names || []
+            ) {
+                next.set(name, "hide");
+            }
+
+            return {
+                ...state,
+                genreTri: next,
+            };
+        }
+
+        case "SET_ADULT_HIDDEN": {
+            const next = new Map(
+                state.genreTri
+            );
+
+            if (action.value) {
+                next.set(
+                    "成人",
+                    "hide"
+                );
+            } else {
+                next.delete("成人");
+            }
+
+            return {
+                ...state,
+                genreTri: next,
+            };
+        }
+
+        case "RESET_GENRE":
+            return {
+                ...state,
+                genreTri: new Map(),
+            };
+
+
+        /* =========================
+           語言
+        ========================= */
 
         case "SET_LANG_ACTIVE":
             return {
                 ...state,
+
                 [action.langKey]: {
                     ...state[action.langKey],
+
                     active: action.value,
                 },
             };
 
-        case "SET_LANG_HIDDEN":
+        case "SET_LANG_PRESET": {
+            const {
+                langKey,
+                branch,
+                mode,
+                names = [],
+            } = action;
+
+            const nextTri = new Map();
+
+            if (mode === "none") {
+                for (const name of names) {
+                    nextTri.set(
+                        name,
+                        "hide"
+                    );
+                }
+            }
+
             return {
                 ...state,
-                [action.langKey]: {
-                    ...state[action.langKey],
 
-                    hidden: {
-                        ...state[action.langKey].hidden,
-                        [action.branch]:
-                            action.hidden,
+                [langKey]: {
+                    ...state[langKey],
+
+                    tri: {
+                        ...state[langKey].tri,
+
+                        [branch]:
+                            nextTri,
                     },
 
                     preset: {
-                        ...state[action.langKey].preset,
-                        [action.branch]:
-                            action.preset,
+                        ...state[
+                            langKey
+                        ].preset,
+
+                        [branch]: mode,
+                    },
+                },
+            };
+        }
+
+        case "SET_LANG_TRI": {
+            const {
+                langKey,
+                branch,
+                name,
+                value,
+                names = [],
+            } = action;
+
+            const currentTri =
+                state[langKey].tri[
+                branch
+                ] || new Map();
+
+            const nextTri =
+                new Map(currentTri);
+
+            if (value === "show") {
+                nextTri.delete(name);
+            } else {
+                nextTri.set(
+                    name,
+                    value
+                );
+            }
+
+            const hasForce =
+                names.some(
+                    (item) =>
+                        (
+                            nextTri.get(item) ||
+                            "show"
+                        ) === "force"
+                );
+
+            const allShow =
+                names.length > 0 &&
+                names.every(
+                    (item) =>
+                        (
+                            nextTri.get(item) ||
+                            "show"
+                        ) === "show"
+                );
+
+            const allHide =
+                names.length > 0 &&
+                names.every(
+                    (item) =>
+                        (
+                            nextTri.get(item) ||
+                            "show"
+                        ) === "hide"
+                );
+
+            let preset =
+                "custom";
+
+            if (
+                allShow &&
+                !hasForce
+            ) {
+                preset = "all";
+            } else if (
+                allHide &&
+                !hasForce
+            ) {
+                preset = "none";
+            }
+
+            return {
+                ...state,
+
+                [langKey]: {
+                    ...state[langKey],
+
+                    tri: {
+                        ...state[
+                            langKey
+                        ].tri,
+
+                        [branch]:
+                            nextTri,
+                    },
+
+                    preset: {
+                        ...state[
+                            langKey
+                        ].preset,
+
+                        [branch]:
+                            preset,
+                    },
+                },
+            };
+        }
+
+        case "RESET_LANG":
+            return {
+                ...state,
+
+                langMV: {
+                    active: "orig",
+
+                    tri: {
+                        orig: new Map(),
+                        dub: new Map(),
+                        sub: new Map(),
+                    },
+
+                    preset: {
+                        orig: "all",
+                        dub: "all",
+                        sub: "all",
+                    },
+                },
+
+                langGM: {
+                    active: "sub",
+
+                    tri: {
+                        sub: new Map(),
+                        voice: new Map(),
+                        ui: new Map(),
+                    },
+
+                    preset: {
+                        sub: "all",
+                        voice: "all",
+                        ui: "all",
                     },
                 },
             };
 
+
+        /* =========================
+           主視覺圖
+        ========================= */
+
         case "SET_HIDE_NO_MAIN_IMAGE":
             return {
                 ...state,
+
                 hideNoMainImage:
                     action.value,
             };
+
+        case "RESET_IMAGE":
+            return {
+                ...state,
+
+                hideNoMainImage: false,
+            };
+
 
         default:
             return state;
     }
 }
 
-/* Clone Filter State */
+
+/* =========================================================
+   Clone
+========================================================= */
+
 export function cloneFilterState(state) {
     return {
         ...state,
-
-        hideTypes: {
-            ...state.hideTypes,
-        },
 
         statusHidden: new Set(
             state.statusHidden
@@ -267,20 +606,22 @@ export function cloneFilterState(state) {
             state.genreTri
         ),
 
+        pricingModelTri: new Map(),
+
         langMV: {
             ...state.langMV,
 
-            hidden: {
-                orig: new Set(
-                    state.langMV.hidden.orig
+            tri: {
+                orig: new Map(
+                    state.langMV.tri.orig
                 ),
 
-                dub: new Set(
-                    state.langMV.hidden.dub
+                dub: new Map(
+                    state.langMV.tri.dub
                 ),
 
-                sub: new Set(
-                    state.langMV.hidden.sub
+                sub: new Map(
+                    state.langMV.tri.sub
                 ),
             },
 
@@ -292,17 +633,17 @@ export function cloneFilterState(state) {
         langGM: {
             ...state.langGM,
 
-            hidden: {
-                sub: new Set(
-                    state.langGM.hidden.sub
+            tri: {
+                sub: new Map(
+                    state.langGM.tri.sub
                 ),
 
-                voice: new Set(
-                    state.langGM.hidden.voice
+                voice: new Map(
+                    state.langGM.tri.voice
                 ),
 
-                ui: new Set(
-                    state.langGM.hidden.ui
+                ui: new Map(
+                    state.langGM.tri.ui
                 ),
             },
 

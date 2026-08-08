@@ -1,22 +1,64 @@
 // src/components/works/SortMenu.jsx
 
-const SORT_OPTIONS = [
-    ["release_date_simp", "發布日期"],
-    ["id", "編號"],
-    ["name", "名稱"],
+const COMMON_SORT_OPTIONS = [
     [
-        "episode_total_count",
-        "總集數（隱藏電影和遊戲）",
+        "release_date_simp",
+        "發布日期",
     ],
     [
-        "runtime",
-        "片長（隱藏遊戲）",
+        "id",
+        "編號",
     ],
     [
-        "last_update",
-        "上次更新時間",
+        "name",
+        "名稱",
     ],
 ];
+
+const LAST_UPDATE_OPTION = [
+    "last_update",
+    "上次更新時間",
+];
+
+function getSortOptions(
+    activeTab
+) {
+    if (activeTab === "series") {
+        return [
+            ...COMMON_SORT_OPTIONS,
+
+            [
+                "episode_total_count",
+                "總集數",
+            ],
+
+            [
+                "runtime",
+                "片長",
+            ],
+
+            LAST_UPDATE_OPTION,
+        ];
+    }
+
+    if (activeTab === "movies") {
+        return [
+            ...COMMON_SORT_OPTIONS,
+
+            [
+                "runtime",
+                "片長",
+            ],
+
+            LAST_UPDATE_OPTION,
+        ];
+    }
+
+    return [
+        ...COMMON_SORT_OPTIONS,
+        LAST_UPDATE_OPTION,
+    ];
+}
 
 const SORT_DIRECTIONS = [
     ["asc", "遞增"],
@@ -24,12 +66,16 @@ const SORT_DIRECTIONS = [
 ];
 
 export default function SortMenu({
+    activeTab,
     sortKey,
     sortDir,
     onSortKeyChange,
     onSortDirChange,
     onClose,
 }) {
+    const options =
+        getSortOptions(activeTab);
+
     return (
         <div className="absolute right-0 z-50 mt-2 w-[280px] overflow-hidden rounded-xl border border-slate-800 bg-slate-950/95 shadow-xl backdrop-blur">
             <div className="border-b border-slate-800 p-3">
@@ -38,7 +84,7 @@ export default function SortMenu({
                 </div>
 
                 <div className="grid grid-cols-1 gap-1">
-                    {SORT_OPTIONS.map(
+                    {options.map(
                         ([key, label]) => (
                             <button
                                 key={key}

@@ -85,7 +85,7 @@ export default function WorkHero({
         </div>
 
         <div className="mt-4">
-          <h1 className="text-2xl font-bold text-white">
+          <h1 className="text-3xl font-bold text-white">
             {work.title_zh || "未知作品"}
           </h1>
 
@@ -93,20 +93,20 @@ export default function WorkHero({
             work.title_original &&
             work.title_original !==
               work.title_zh && (
-              <p className="text-sm font-medium text-slate-300">
+              <p className="text-lg font-medium text-slate-300">
                 原文：{work.title_original}
               </p>
             )}
 
           {work.title_en && (
-            <p className="text-sm font-medium text-slate-400">
+            <p className="text-base font-medium text-slate-400">
               {work.title_en}
             </p>
           )}
 
           <div className="mt-3 flex flex-wrap gap-2">
             <span
-              className={`shrink-0 rounded border px-2 py-1 text-xs ${getTypeClass(
+              className={`shrink-0 rounded border px-2 py-1 text-sm ${getTypeClass(
                 work
               )}`}
             >
@@ -114,7 +114,7 @@ export default function WorkHero({
             </span>
 
             <span
-              className={`rounded border px-2 py-1 text-xs ${getStatusClass(
+              className={`rounded border px-2 py-1 text-sm ${getStatusClass(
                 work.status
               )}`}
             >
@@ -122,7 +122,7 @@ export default function WorkHero({
             </span>
 
             {work.runtime && (
-              <span className="flex items-center rounded border border-slate-700 bg-slate-800 px-2 py-1 text-xs text-slate-300">
+              <span className="flex items-center rounded border border-slate-700 bg-slate-800 px-2 py-1 text-sm text-slate-300">
                 <Clock
                   size={10}
                   className="mr-1"
@@ -135,7 +135,7 @@ export default function WorkHero({
 
             {isSeries &&
               work.episode_total_count && (
-                <span className="rounded border border-slate-700 bg-slate-800 px-2 py-1 text-xs text-slate-300">
+                <span className="rounded border border-slate-700 bg-slate-800 px-2 py-1 text-sm text-slate-300">
                   共 {work.episode_total_count} 集
                 </span>
               )}

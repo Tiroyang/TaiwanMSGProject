@@ -145,132 +145,17 @@ function Segmented({
     );
 }
 
-/* FilterModal 需要的語言輔助函式 */
-function updateLangBranch(
-    filters,
-    langKey,
-    branch,
-    nextHidden,
-    allNamesLength
-) {
-    const allHidden =
-        allNamesLength > 0 &&
-        nextHidden.size === allNamesLength;
-
-    const noneHidden =
-        nextHidden.size === 0;
-
-    const preset = allHidden
-        ? "none"
-        : noneHidden
-            ? "all"
-            : "custom";
-
-    return {
-        ...filters,
-
-        [langKey]: {
-            ...filters[langKey],
-
-            hidden: {
-                ...filters[langKey].hidden,
-                [branch]: nextHidden,
-            },
-
-            preset: {
-                ...filters[langKey].preset,
-                [branch]: preset,
-            },
-        },
-    };
-}
-
-function setLangPreset(
-    setTempFilters,
-    langKey,
-    branch,
-    mode,
-    allNames
-) {
-    setTempFilters((filters) => {
-        const nextHidden =
-            mode === "all"
-                ? new Set()
-                : new Set(allNames);
-
-        return {
-            ...filters,
-
-            [langKey]: {
-                ...filters[langKey],
-
-                hidden: {
-                    ...filters[langKey].hidden,
-                    [branch]: nextHidden,
-                },
-
-                preset: {
-                    ...filters[langKey].preset,
-                    [branch]: mode,
-                },
-            },
-        };
-    });
-}
-
-function toggleLangHidden(
-    setTempFilters,
-    langKey,
-    branch,
-    name,
-    allNames
-) {
-    setTempFilters((filters) => {
-        const currentHidden =
-            filters[langKey].hidden[branch] ??
-            new Set();
-
-        const nextHidden =
-            new Set(currentHidden);
-
-        if (nextHidden.has(name)) {
-            nextHidden.delete(name);
-        } else {
-            nextHidden.add(name);
-        }
-
-        return updateLangBranch(
-            filters,
-            langKey,
-            branch,
-            nextHidden,
-            allNames.length
-        );
-    });
-}
-
-function buildTriMapShowAll() {
-    return new Map();
-}
-
-function buildTriMapHideAll(names) {
-    const map = new Map();
-
-    for (const name of names) {
-        map.set(name, "hide");
-    }
-
-    return map;
-}
-
 /* 主體 */
 export default function FilterModal({
+    activeTab,
+
     open,
     onClose,
 
     statusCounts = [],
     countryCounts = [],
     genreCounts = [],
+    pricingModelCounts = [],
     langCounts = {
         mv: {},
         gm: {},
@@ -280,7 +165,7 @@ export default function FilterModal({
     lang = "zh",
 
     tempFilters,
-    setTempFilters,
+    dispatch,
 
     dateFormatWarning = false,
     onResetAll,
@@ -370,17 +255,22 @@ export default function FilterModal({
     const applyCountryPreset =
         useCallback(
             (presetKey) => {
-                setTempFilters((filters) =>
+                const nextFilters =
                     nextCountryFiltersByPreset(
-                        filters,
+                        tempFilters,
                         presetKey,
                         countryNames
-                    )
-                );
+                    );
+
+                dispatch({
+                    type: "REPLACE",
+                    value: nextFilters,
+                });
             },
             [
-                setTempFilters,
+                tempFilters,
                 countryNames,
+                dispatch,
             ]
         );
 
@@ -392,18 +282,26 @@ export default function FilterModal({
             return;
         }
 
-        if (countryUi.coInvalid) {
-            setTempFilters((filters) => ({
-                ...filters,
-                countryCoMode: false,
-                countryPreset: "none",
-            }));
+        if (!countryUi.coInvalid) {
+            return;
         }
+
+        dispatch({
+            type: "SET_COUNTRY_STATE",
+
+            countryTri:
+                tempFilters.countryTri,
+
+            countryPreset: "none",
+
+            countryCoMode: false,
+        });
     }, [
         open,
         countryUi.coInvalid,
         tempFilters.countryCoMode,
-        setTempFilters,
+        tempFilters.countryTri,
+        dispatch,
     ]);
 
     const sortedLangCounts = useMemo(() => {
@@ -492,20 +390,15 @@ export default function FilterModal({
                 </header>
 
                 <div className="p-4 overflow-auto max-h-[calc(85vh-56px)] space-y-6">
-                    <TypeFilterSection
-                        filters={tempFilters}
-                        setFilters={setTempFilters}
-                    />
-
                     <StatusFilterSection
                         statusCounts={statusCounts}
                         filters={tempFilters}
-                        setFilters={setTempFilters}
+                        dispatch={dispatch}
                     />
 
                     <DateFilterSection
                         filters={tempFilters}
-                        setFilters={setTempFilters}
+                        dispatch={dispatch}
                     />
 
                     <CountryFilterSection
@@ -517,7 +410,7 @@ export default function FilterModal({
                             applyCountryPreset
                         }
                         filters={tempFilters}
-                        setFilters={setTempFilters}
+                        dispatch={dispatch}
                     />
 
                     <GenreFilterSection
@@ -527,18 +420,29 @@ export default function FilterModal({
                         tagMap={tagMap}
                         lang={lang}
                         filters={tempFilters}
-                        setFilters={setTempFilters}
+                        dispatch={dispatch}
                     />
 
+                    {activeTab === "games" && (
+                        <PricingModelFilterSection
+                            pricingModelCounts={
+                                pricingModelCounts
+                            }
+                            filters={tempFilters}
+                            dispatch={dispatch}
+                        />
+                    )}
+
                     <LanguageFilterSection
+                        activeTab={activeTab}
                         langCounts={sortedLangCounts}
                         filters={tempFilters}
-                        setFilters={setTempFilters}
+                        dispatch={dispatch}
                     />
 
                     <ImageFilterSection
                         filters={tempFilters}
-                        setFilters={setTempFilters}
+                        dispatch={dispatch}
                     />
                 </div>
             </div>
@@ -547,82 +451,20 @@ export default function FilterModal({
     );
 }
 
-/* 類別篩選區塊 */
-function TypeFilterSection({
-    filters,
-    setFilters,
-}) {
-    const options = [
-        ["movies", "隱藏電影"],
-        ["series", "隱藏影集"],
-        ["games", "隱藏遊戲"],
-    ];
-
-    return (
-        <section className="space-y-3">
-            <SectionHeader
-                title="類別"
-                onClear={() => {
-                    setFilters((current) => ({
-                        ...current,
-                        hideTypes: {
-                            movies: false,
-                            series: false,
-                            games: false,
-                        },
-                    }));
-                }}
-            />
-
-            <div className="flex flex-wrap gap-2">
-                {options.map(([key, label]) => (
-                    <button
-                        key={key}
-                        type="button"
-                        onClick={() => {
-                            setFilters((current) => ({
-                                ...current,
-
-                                hideTypes: {
-                                    ...current.hideTypes,
-
-                                    [key]:
-                                        !current.hideTypes[key],
-                                },
-                            }));
-                        }}
-                        className={[
-                            "px-3 py-2 rounded-xl border text-sm transition",
-
-                            filters.hideTypes[key]
-                                ? "bg-red-600/15 border-red-500/30 text-red-200"
-                                : "bg-slate-900/40 border-slate-800 text-slate-200 hover:bg-slate-800/50",
-                        ].join(" ")}
-                    >
-                        {label}
-                    </button>
-                ))}
-            </div>
-        </section>
-    );
-}
-
 /* 狀態篩選區塊 */
 function StatusFilterSection({
     statusCounts,
     filters,
-    setFilters,
+    dispatch,
 }) {
     return (
         <section className="space-y-3">
             <SectionHeader
                 title="狀態"
                 onClear={() => {
-                    setFilters((current) => ({
-                        ...current,
-                        statusMode: "all",
-                        statusHidden: new Set(),
-                    }));
+                    dispatch({
+                        type: "SET_STATUS_ALL",
+                    });
                 }}
             />
 
@@ -630,11 +472,9 @@ function StatusFilterSection({
                 <button
                     type="button"
                     onClick={() => {
-                        setFilters((current) => ({
-                            ...current,
-                            statusMode: "all",
-                            statusHidden: new Set(),
-                        }));
+                        dispatch({
+                            type: "SET_STATUS_ALL",
+                        });
                     }}
                     className={[
                         "px-3 py-2 rounded-xl border transition",
@@ -650,16 +490,13 @@ function StatusFilterSection({
                 <button
                     type="button"
                     onClick={() => {
-                        setFilters((current) => ({
-                            ...current,
-                            statusMode: "none",
+                        dispatch({
+                            type: "SET_STATUS_NONE",
 
-                            statusHidden: new Set(
-                                statusCounts.map(
-                                    (item) => item.name
-                                )
+                            names: statusCounts.map(
+                                (item) => item.name
                             ),
-                        }));
+                        });
                     }}
                     className={[
                         "px-3 py-2 rounded-xl border transition",
@@ -690,45 +527,11 @@ function StatusFilterSection({
                                     : "show"
                             }
                             onClick={() => {
-                                setFilters((current) => {
-                                    const nextHidden =
-                                        new Set(
-                                            current.statusHidden
-                                        );
-
-                                    if (
-                                        nextHidden.has(
-                                            item.name
-                                        )
-                                    ) {
-                                        nextHidden.delete(
-                                            item.name
-                                        );
-                                    } else {
-                                        nextHidden.add(
-                                            item.name
-                                        );
-                                    }
-
-                                    const allHidden =
-                                        nextHidden.size ===
-                                        statusCounts.length;
-
-                                    const noneHidden =
-                                        nextHidden.size === 0;
-
-                                    return {
-                                        ...current,
-
-                                        statusHidden:
-                                            nextHidden,
-
-                                        statusMode: allHidden
-                                            ? "none"
-                                            : noneHidden
-                                                ? "all"
-                                                : "custom",
-                                    };
+                                dispatch({
+                                    type: "TOGGLE_STATUS",
+                                    status: item.name,
+                                    totalCount:
+                                        statusCounts.length,
                                 });
                             }}
                         >
@@ -745,22 +548,16 @@ function StatusFilterSection({
 /* 日期篩選區塊 */
 function DateFilterSection({
     filters,
-    setFilters,
+    dispatch,
 }) {
     return (
         <section className="space-y-3">
             <SectionHeader
                 title="發布日期"
                 onClear={() => {
-                    setFilters((current) => ({
-                        ...current,
-
-                        dateRange: {
-                            start: "",
-                            end: "",
-                            hideNoDate: false,
-                        },
-                    }));
+                    dispatch({
+                        type: "RESET_DATE",
+                    });
                 }}
             />
 
@@ -769,14 +566,10 @@ function DateFilterSection({
                     placeholder="開始日期 YYYY/MM/DD"
                     value={filters.dateRange.start}
                     onChange={(value) => {
-                        setFilters((current) => ({
-                            ...current,
-
-                            dateRange: {
-                                ...current.dateRange,
-                                start: value,
-                            },
-                        }));
+                        dispatch({
+                            type: "SET_DATE_START",
+                            value,
+                        });
                     }}
                 />
 
@@ -788,14 +581,10 @@ function DateFilterSection({
                     placeholder="結束日期 YYYY/MM/DD"
                     value={filters.dateRange.end}
                     onChange={(value) => {
-                        setFilters((current) => ({
-                            ...current,
-
-                            dateRange: {
-                                ...current.dateRange,
-                                end: value,
-                            },
-                        }));
+                        dispatch({
+                            type: "SET_DATE_END",
+                            value,
+                        });
                     }}
                 />
             </div>
@@ -807,16 +596,10 @@ function DateFilterSection({
                         filters.dateRange.hideNoDate
                     }
                     onChange={(event) => {
-                        setFilters((current) => ({
-                            ...current,
-
-                            dateRange: {
-                                ...current.dateRange,
-
-                                hideNoDate:
-                                    event.target.checked,
-                            },
-                        }));
+                        dispatch({
+                            type: "SET_HIDE_NO_DATE",
+                            value: event.target.checked,
+                        });
                     }}
                 />
 
@@ -871,19 +654,16 @@ function CountryFilterSection({
     countryUi,
     onPresetChange,
     filters,
-    setFilters,
+    dispatch,
 }) {
     return (
         <section className="space-y-3">
             <SectionHeader
                 title="製作地區"
                 onClear={() => {
-                    setFilters((current) => ({
-                        ...current,
-                        countryTri: new Map(),
-                        countryPreset: "none",
-                        countryCoMode: false,
-                    }));
+                    dispatch({
+                        type: "RESET_COUNTRY",
+                    });
                 }}
             />
 
@@ -934,47 +714,22 @@ function CountryFilterSection({
                             active={tri !== "hide"}
                             tri={tri}
                             onClick={() => {
-                                setFilters((current) => {
-                                    const next = new Map(
-                                        current.countryTri
-                                    );
+                                const nextValue =
+                                    tri === "hide"
+                                        ? "show"
+                                        : "hide";
 
-                                    const currentValue =
-                                        next.get(item.name) ||
-                                        "show";
-
-                                    next.set(
-                                        item.name,
-                                        currentValue === "hide"
-                                            ? "show"
-                                            : "hide"
-                                    );
-
-                                    return {
-                                        ...current,
-                                        countryTri: next,
-                                        countryPreset:
-                                            "custom",
-                                    };
+                                dispatch({
+                                    type: "SET_COUNTRY_TRI",
+                                    name: item.name,
+                                    value: nextValue,
                                 });
                             }}
                             onDoubleClick={() => {
-                                setFilters((current) => {
-                                    const next = new Map(
-                                        current.countryTri
-                                    );
-
-                                    next.set(
-                                        item.name,
-                                        "force"
-                                    );
-
-                                    return {
-                                        ...current,
-                                        countryTri: next,
-                                        countryPreset:
-                                            "custom",
-                                    };
+                                dispatch({
+                                    type: "SET_COUNTRY_TRI",
+                                    name: item.name,
+                                    value: "force",
                                 });
                             }}
                         >
@@ -994,7 +749,7 @@ function GenreFilterSection({
     tagMap,
     lang,
     filters,
-    setFilters,
+    dispatch,
 }) {
     const names = genreCounts.map(
         (item) => item.name
@@ -1014,10 +769,9 @@ function GenreFilterSection({
             <SectionHeader
                 title="類型"
                 onClear={() => {
-                    setFilters((current) => ({
-                        ...current,
-                        genreTri: new Map(),
-                    }));
+                    dispatch({
+                        type: "RESET_GENRE",
+                    });
                 }}
             />
 
@@ -1030,16 +784,18 @@ function GenreFilterSection({
                         key={key}
                         type="button"
                         onClick={() => {
-                            setFilters((current) => ({
-                                ...current,
+                            if (key === "showAll") {
+                                dispatch({
+                                    type: "SET_GENRE_ALL",
+                                });
 
-                                genreTri:
-                                    key === "showAll"
-                                        ? buildTriMapShowAll()
-                                        : buildTriMapHideAll(
-                                            names
-                                        ),
-                            }));
+                                return;
+                            }
+
+                            dispatch({
+                                type: "SET_GENRE_NONE",
+                                names,
+                            });
                         }}
                         className={[
                             "px-3 py-2 rounded-xl border transition",
@@ -1057,23 +813,14 @@ function GenreFilterSection({
             <label className="px-3 text-xs text-slate-200 flex items-center gap-2">
                 <input
                     type="checkbox"
-                    checked={adultTri === "hide"}
+                    checked={
+                        adultTri === "hide"
+                    }
                     onChange={(event) => {
-                        setFilters((current) => {
-                            const next = new Map(
-                                current.genreTri
-                            );
-
-                            if (event.target.checked) {
-                                next.set("成人", "hide");
-                            } else {
-                                next.delete("成人");
-                            }
-
-                            return {
-                                ...current,
-                                genreTri: next,
-                            };
+                        dispatch({
+                            type: "SET_ADULT_HIDDEN",
+                            value:
+                                event.target.checked,
                         });
                     }}
                 />
@@ -1091,7 +838,9 @@ function GenreFilterSection({
                     return (
                         <Pill
                             key={item.name}
-                            active={tri !== "hide"}
+                            active={
+                                tri !== "hide"
+                            }
                             tri={tri}
                             title={getTagTitle(
                                 item.name,
@@ -1099,47 +848,22 @@ function GenreFilterSection({
                                 lang
                             )}
                             onClick={() => {
-                                setFilters((current) => {
-                                    const next = new Map(
-                                        current.genreTri
-                                    );
+                                dispatch({
+                                    type: "SET_GENRE_TRI",
 
-                                    const currentValue =
-                                        next.get(item.name) ||
-                                        "show";
+                                    name: item.name,
 
-                                    if (
-                                        currentValue === "hide"
-                                    ) {
-                                        next.delete(item.name);
-                                    } else {
-                                        next.set(
-                                            item.name,
-                                            "hide"
-                                        );
-                                    }
-
-                                    return {
-                                        ...current,
-                                        genreTri: next,
-                                    };
+                                    value:
+                                        tri === "hide"
+                                            ? "show"
+                                            : "hide",
                                 });
                             }}
                             onDoubleClick={() => {
-                                setFilters((current) => {
-                                    const next = new Map(
-                                        current.genreTri
-                                    );
-
-                                    next.set(
-                                        item.name,
-                                        "force"
-                                    );
-
-                                    return {
-                                        ...current,
-                                        genreTri: next,
-                                    };
+                                dispatch({
+                                    type: "SET_GENRE_TRI",
+                                    name: item.name,
+                                    value: "force",
                                 });
                             }}
                         >
@@ -1148,7 +872,8 @@ function GenreFilterSection({
                                 tagMap,
                                 lang
                             ).label}{" "}
-                            ({item.current}/{item.total})
+                            ({item.current}/
+                            {item.total})
                         </Pill>
                     );
                 })}
@@ -1157,124 +882,229 @@ function GenreFilterSection({
     );
 }
 
+function PricingModelFilterSection({
+    pricingModelCounts,
+    filters,
+    dispatch,
+}) {
+    const names =
+        pricingModelCounts.map(
+            (item) => item.name
+        );
+
+    const triMap =
+        filters.pricingModelTri ||
+        new Map();
+
+    const allShow =
+        names.length > 0 &&
+        names.every(
+            (name) =>
+                (
+                    triMap.get(name) ||
+                    "show"
+                ) === "show"
+        );
+
+    const allHide =
+        names.length > 0 &&
+        names.every(
+            (name) =>
+                (
+                    triMap.get(name) ||
+                    "show"
+                ) === "hide"
+        );
+
+    return (
+        <section className="space-y-3">
+            <SectionHeader
+                title="收費模式"
+                onClear={() => {
+                    dispatch({
+                        type:
+                            "RESET_PRICING_MODEL",
+                    });
+                }}
+            />
+
+            <div className="flex flex-wrap gap-2 text-xs">
+                <button
+                    type="button"
+                    onClick={() => {
+                        dispatch({
+                            type:
+                                "SET_PRICING_MODEL_ALL",
+                        });
+                    }}
+                    className={[
+                        "px-3 py-2 rounded-xl border transition",
+
+                        allShow
+                            ? "bg-sky-600/20 border-sky-500/40 text-sky-200"
+                            : "bg-slate-900/40 border-slate-800 text-slate-200",
+                    ].join(" ")}
+                >
+                    全選
+                </button>
+
+                <button
+                    type="button"
+                    onClick={() => {
+                        dispatch({
+                            type:
+                                "SET_PRICING_MODEL_NONE",
+
+                            names,
+                        });
+                    }}
+                    className={[
+                        "px-3 py-2 rounded-xl border transition",
+
+                        allHide
+                            ? "bg-sky-600/20 border-sky-500/40 text-sky-200"
+                            : "bg-slate-900/40 border-slate-800 text-slate-200",
+                    ].join(" ")}
+                >
+                    全不選
+                </button>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+                {pricingModelCounts.map(
+                    (item) => {
+                        const tri =
+                            triMap.get(
+                                item.name
+                            ) ||
+                            "show";
+
+                        return (
+                            <Pill
+                                key={
+                                    item.name
+                                }
+                                active={
+                                    tri !==
+                                    "hide"
+                                }
+                                tri={tri}
+                                onClick={() => {
+                                    dispatch({
+                                        type:
+                                            "SET_PRICING_MODEL_TRI",
+
+                                        name:
+                                            item.name,
+
+                                        value:
+                                            tri ===
+                                                "hide"
+                                                ? "show"
+                                                : "hide",
+                                    });
+                                }}
+                                onDoubleClick={() => {
+                                    dispatch({
+                                        type:
+                                            "SET_PRICING_MODEL_TRI",
+
+                                        name:
+                                            item.name,
+
+                                        value:
+                                            "force",
+                                    });
+                                }}
+                            >
+                                {item.name} (
+                                {item.current}/
+                                {item.total})
+                            </Pill>
+                        );
+                    }
+                )}
+
+                {pricingModelCounts.length ===
+                    0 && (
+                        <div className="text-sm text-slate-500">
+                            （沒有可顯示的資料）
+                        </div>
+                    )}
+            </div>
+        </section>
+    );
+}
+
 /* 語言篩選區塊 */
 function LanguageFilterSection({
+    activeTab,
     langCounts,
     filters,
-    setFilters,
+    dispatch,
 }) {
+    const isGame =
+        activeTab === "games";
+
+    const langKey =
+        isGame
+            ? "langGM"
+            : "langMV";
+
+    const branches =
+        isGame
+            ? [
+                {
+                    value: "sub",
+                    label: "字幕",
+                },
+                {
+                    value: "voice",
+                    label: "語音",
+                },
+                {
+                    value: "ui",
+                    label: "介面",
+                },
+            ]
+            : [
+                {
+                    value: "orig",
+                    label: "原音",
+                },
+                {
+                    value: "dub",
+                    label: "配音",
+                },
+                {
+                    value: "sub",
+                    label: "字幕",
+                },
+            ];
+
+    const counts =
+        isGame
+            ? langCounts.gm
+            : langCounts.mv;
+
     return (
         <section className="space-y-3">
             <SectionHeader
                 title="支援語言"
                 onClear={() => {
-                    setFilters((current) => ({
-                        ...current,
-
-                        langMode: "none",
-
-                        langMV: {
-                            active: "orig",
-
-                            hidden: {
-                                orig: new Set(),
-                                dub: new Set(),
-                                sub: new Set(),
-                            },
-
-                            preset: {
-                                orig: "all",
-                                dub: "all",
-                                sub: "all",
-                            },
-                        },
-
-                        langGM: {
-                            active: "sub",
-
-                            hidden: {
-                                sub: new Set(),
-                                voice: new Set(),
-                                ui: new Set(),
-                            },
-
-                            preset: {
-                                sub: "all",
-                                voice: "all",
-                                ui: "all",
-                            },
-                        },
-                    }));
+                    dispatch({
+                        type: "RESET_LANG",
+                    });
                 }}
             />
 
-            <Segmented
-                value={filters.langMode}
-                onChange={(value) => {
-                    setFilters((current) => ({
-                        ...current,
-                        langMode: value,
-                    }));
-                }}
-                options={[
-                    {
-                        value: "mv",
-                        label: "電影／影集",
-                    },
-                    {
-                        value: "gm",
-                        label: "遊戲",
-                    },
-                ]}
+            <LanguageBranchSection
+                langKey={langKey}
+                branches={branches}
+                langCounts={counts}
+                filters={filters}
+                dispatch={dispatch}
             />
-
-            {filters.langMode === "mv" && (
-                <LanguageBranchSection
-                    mode="mv"
-                    langKey="langMV"
-                    branches={[
-                        {
-                            value: "orig",
-                            label: "原音",
-                        },
-                        {
-                            value: "dub",
-                            label: "配音",
-                        },
-                        {
-                            value: "sub",
-                            label: "字幕",
-                        },
-                    ]}
-                    langCounts={langCounts.mv}
-                    filters={filters}
-                    setFilters={setFilters}
-                />
-            )}
-
-            {filters.langMode === "gm" && (
-                <LanguageBranchSection
-                    mode="gm"
-                    langKey="langGM"
-                    branches={[
-                        {
-                            value: "sub",
-                            label: "字幕",
-                        },
-                        {
-                            value: "voice",
-                            label: "語音",
-                        },
-                        {
-                            value: "ui",
-                            label: "介面",
-                        },
-                    ]}
-                    langCounts={langCounts.gm}
-                    filters={filters}
-                    setFilters={setFilters}
-                />
-            )}
         </section>
     );
 }
@@ -1284,7 +1114,7 @@ function LanguageBranchSection({
     branches,
     langCounts,
     filters,
-    setFilters,
+    dispatch,
 }) {
     const branch =
         filters[langKey].active;
@@ -1292,9 +1122,10 @@ function LanguageBranchSection({
     const list =
         langCounts?.[branch] || [];
 
-    const hiddenSet =
-        filters[langKey].hidden[branch] ||
-        new Set();
+    const triMap =
+        filters[langKey].tri[
+        branch
+        ] || new Map();
 
     const allNames = list.map(
         (item) => item.name
@@ -1305,14 +1136,13 @@ function LanguageBranchSection({
             <Segmented
                 value={branch}
                 onChange={(value) => {
-                    setFilters((current) => ({
-                        ...current,
+                    dispatch({
+                        type:
+                            "SET_LANG_ACTIVE",
 
-                        [langKey]: {
-                            ...current[langKey],
-                            active: value,
-                        },
-                    }));
+                        langKey,
+                        value,
+                    });
                 }}
                 options={branches}
             />
@@ -1322,18 +1152,24 @@ function LanguageBranchSection({
                     <button
                         type="button"
                         onClick={() => {
-                            setLangPreset(
-                                setFilters,
+                            dispatch({
+                                type:
+                                    "SET_LANG_PRESET",
+
                                 langKey,
                                 branch,
-                                "all",
-                                allNames
-                            );
+
+                                mode: "all",
+                                names:
+                                    allNames,
+                            });
                         }}
                         className={[
                             "px-3 py-2 rounded-xl border transition",
 
-                            filters[langKey].preset[
+                            filters[
+                                langKey
+                            ].preset[
                                 branch
                             ] === "all"
                                 ? "bg-sky-600/20 border-sky-500/40 text-sky-200"
@@ -1346,18 +1182,24 @@ function LanguageBranchSection({
                     <button
                         type="button"
                         onClick={() => {
-                            setLangPreset(
-                                setFilters,
+                            dispatch({
+                                type:
+                                    "SET_LANG_PRESET",
+
                                 langKey,
                                 branch,
-                                "none",
-                                allNames
-                            );
+
+                                mode: "none",
+                                names:
+                                    allNames,
+                            });
                         }}
                         className={[
                             "px-3 py-2 rounded-xl border transition",
 
-                            filters[langKey].preset[
+                            filters[
+                                langKey
+                            ].preset[
                                 branch
                             ] === "none"
                                 ? "bg-sky-600/20 border-sky-500/40 text-sky-200"
@@ -1370,29 +1212,66 @@ function LanguageBranchSection({
 
                 <div className="flex flex-wrap gap-2">
                     {list.map((item) => {
-                        const hidden =
-                            hiddenSet.has(item.name);
+                        const tri =
+                            triMap.get(
+                                item.name
+                            ) ||
+                            "show";
 
                         return (
                             <Pill
-                                key={item.name}
-                                active={!hidden}
-                                tri={
-                                    hidden
-                                        ? "hide"
-                                        : "show"
+                                key={
+                                    item.name
                                 }
+                                active={
+                                    tri !==
+                                    "hide"
+                                }
+                                tri={tri}
+
                                 onClick={() => {
-                                    toggleLangHidden(
-                                        setFilters,
+                                    dispatch({
+                                        type:
+                                            "SET_LANG_TRI",
+
                                         langKey,
                                         branch,
-                                        item.name,
-                                        allNames
-                                    );
+
+                                        name:
+                                            item.name,
+
+                                        value:
+                                            tri ===
+                                                "hide"
+                                                ? "show"
+                                                : "hide",
+
+                                        names:
+                                            allNames,
+                                    });
+                                }}
+
+                                onDoubleClick={() => {
+                                    dispatch({
+                                        type:
+                                            "SET_LANG_TRI",
+
+                                        langKey,
+                                        branch,
+
+                                        name:
+                                            item.name,
+
+                                        value:
+                                            "force",
+
+                                        names:
+                                            allNames,
+                                    });
                                 }}
                             >
-                                {item.name} ({item.current}/
+                                {item.name} (
+                                {item.current}/
                                 {item.total})
                             </Pill>
                         );
@@ -1412,17 +1291,16 @@ function LanguageBranchSection({
 /* 主視覺圖篩選 */
 function ImageFilterSection({
     filters,
-    setFilters,
+    dispatch,
 }) {
     return (
         <section className="space-y-3">
             <SectionHeader
                 title="主視覺圖"
                 onClear={() => {
-                    setFilters((current) => ({
-                        ...current,
-                        hideNoMainImage: false,
-                    }));
+                    dispatch({
+                        type: "RESET_IMAGE",
+                    });
                 }}
             />
 
@@ -1433,12 +1311,12 @@ function ImageFilterSection({
                         filters.hideNoMainImage
                     }
                     onChange={(event) => {
-                        setFilters((current) => ({
-                            ...current,
+                        dispatch({
+                            type: "SET_HIDE_NO_MAIN_IMAGE",
 
-                            hideNoMainImage:
+                            value:
                                 event.target.checked,
-                        }));
+                        });
                     }}
                 />
 

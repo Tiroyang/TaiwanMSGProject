@@ -46,7 +46,7 @@ export default function RelatedLinksSection({
     if (!links.length) {
         return (
             <DetailSection title="相關連結">
-                <p className="break-all text-sm text-sky-400">
+                <p className="break-all text-base text-sky-400">
                     {String(text)}
                 </p>
             </DetailSection>
@@ -69,7 +69,7 @@ export default function RelatedLinksSection({
                                 title="連結格式無效"
                             >
                                 <ExternalLink
-                                    size={14}
+                                    size={16}
                                     className="mr-2 shrink-0"
                                 />
 
@@ -86,10 +86,10 @@ export default function RelatedLinksSection({
                             href={link.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center text-sm text-sky-400 underline underline-offset-4 transition-colors hover:text-sky-300"
+                            className="flex items-center text-base text-sky-400 underline underline-offset-4 transition-colors hover:text-sky-300"
                         >
                             <ExternalLink
-                                size={14}
+                                size={16}
                                 className="mr-2 shrink-0"
                             />
 

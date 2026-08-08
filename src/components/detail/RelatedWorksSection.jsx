@@ -49,7 +49,7 @@ export default function RelatedWorksSection({
     return (
         <DetailSection title="相關作品">
             {!items.length ? (
-                <p className="break-all text-sm text-sky-400">
+                <p className="break-all text-base text-sky-400">
                     {text}
                 </p>
             ) : (
@@ -57,7 +57,7 @@ export default function RelatedWorksSection({
                     {items.map((item, index) => (
                         <div
                             key={`${item.id}-${index}`}
-                            className="flex break-words text-sm text-slate-200"
+                            className="flex break-words text-base text-slate-200"
                         >
                             <span className="text-slate-400">
                                 {item.description}
@@ -67,10 +67,10 @@ export default function RelatedWorksSection({
                                 href={`#/work/${encodeURIComponent(
                                     item.id
                                 )}`}
-                                className="ml-2 flex items-center text-sm text-sky-400 underline underline-offset-4 hover:text-sky-300"
+                                className="ml-2 flex items-center text-base text-sky-400 underline underline-offset-4 hover:text-sky-300"
                             >
                                 <Link2
-                                    size={14}
+                                    size={16}
                                     className="mr-2 shrink-0"
                                 />
 

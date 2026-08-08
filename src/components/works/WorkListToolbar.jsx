@@ -18,6 +18,8 @@ import {
 } from "../../hooks/useClickOutside";
 
 export default function WorkListToolbar({
+    activeTab,
+
     searchInput,
     onSearchInputChange,
     onSearch,
@@ -50,7 +52,7 @@ export default function WorkListToolbar({
     }
 
     return (
-        <div className="sticky top-[56px] z-20 bg-slate-950/80 backdrop-blur-md">
+        <div className="sticky top-[102px] z-20 bg-slate-950/70 backdrop-blur-md">
             <div className="px-4 py-3">
                 <div className="mx-auto flex max-w-6xl items-center gap-2">
                     <div className="relative flex-1">
@@ -120,6 +122,9 @@ export default function WorkListToolbar({
 
                         {sortMenuOpen && (
                             <SortMenu
+                                activeTab={
+                                    activeTab
+                                }
                                 sortKey={
                                     sortKey
                                 }

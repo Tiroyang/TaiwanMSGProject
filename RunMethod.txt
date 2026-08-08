@@ -1,1 +1,0 @@
-Run "npm run dev" in cmd and open the link.

@@ -105,6 +105,17 @@ export default function WorkBasicInfo({
                                 : ""
                         }
                     />
+
+                    <InfoRow
+                        label="收費模式"
+                        value={
+                            work.pricing_model
+                                ? splitToZhList(
+                                    work.pricing_model
+                                )
+                                : null
+                        }
+                    />
                 </>
             )}
 
@@ -122,7 +133,7 @@ export default function WorkBasicInfo({
                                     {item.actor}
 
                                     {item.role && (
-                                        <span className="ml-1 text-xs text-slate-400">
+                                        <span className="ml-1 text-sm text-slate-400">
                                             飾 {item.role}
                                         </span>
                                     )}

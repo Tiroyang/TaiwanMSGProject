@@ -14,7 +14,7 @@ export default function DetailSection({
             ].join(" ")}
         >
             {title && (
-                <h3 className="mb-2 flex items-center text-[0.9rem] font-bold uppercase text-slate-400">
+                <h3 className="mb-2 flex items-center text-lg font-bold uppercase text-slate-400">
                     {icon}
 
                     {icon && (
