@@ -85,44 +85,6 @@
   </ul>
 </details>
 
-<details open>
-  <summary><strong>📂 src</strong></summary>
-  
-  <table style="border: none; border-collapse: collapse; margin-left: 20px;">
-    <!-- API -->
-    <tr style="border: none;"><td style="border: none; padding: 2px 10px;">📁 api</td><td style="border: none; padding: 2px 10px; color: #6a737d;"># 處理 Google Apps Script API 請求</td></tr>
-    <!-- APP -->
-    <tr style="border: none;"><td style="border: none; padding: 2px 10px;">📁 app</td><td style="border: none; padding: 2px 10px; color: #6a737d;"># 主元件組裝，負責頁面切換、資料載入與全域視窗狀態</td></tr>
-    <!-- ASSETS -->
-    <tr style="border: none;"><td style="border: none; padding: 2px 10px;">📁 assets</td><td style="border: none; padding: 2px 10px; color: #6a737d;"># 靜態資源（圖片、CSS等）</td></tr>
-    
-    <!-- COMPONENTS (可折疊) -->
-    <tr style="border: none;">
-      <td colspan="2" style="border: none; padding: 2px 10px;">
-        <details>
-          <summary>📁 components <span style="color: #6a737d; margin-left: 15px; font-weight: normal;"># 可複用 UI 組件</span></summary>
-          <table style="border: none; border-collapse: collapse; margin-left: 20px; font-size: 0.95em;">
-            <tr style="border: none;"><td style="border: none; padding: 2px 10px;">📁 about</td><td style="border: none; padding: 2px 10px; color: #6a737d;"># 關於按鈕、視窗與相關組件</td></tr>
-            <tr style="border: none;"><td style="border: none; padding: 2px 10px;">📁 common</td><td style="border: none; padding: 2px 10px; color: #6a737d;"># 全局通用組件（Navbar, Footer, Button）</td></tr>
-            <tr style="border: none;"><td style="border: none; padding: 2px 10px;">📁 detail</td><td style="border: none; padding: 2px 10px; color: #6a737d;"># 作品詳細資料頁組件</td></tr>
-            <tr style="border: none;"><td style="border: none; padding: 2px 10px;">📁 filters</td><td style="border: none; padding: 2px 10px; color: #6a737d;"># 進階篩選器組件</td></tr>
-            <tr style="border: none;"><td style="border: none; padding: 2px 10px;">📁 works</td><td style="border: none; padding: 2px 10px; color: #6a737d;"># 作品列表與卡片頁組件</td></tr>
-          </table>
-        </details>
-      </td>
-    </tr>
-    
-    <!-- CONFIG -->
-    <tr style="border: none;"><td style="border: none; padding: 2px 10px;">📁 config</td><td style="border: none; padding: 2px 10px; color: #6a737d;"># 網站全域設定與專案資訊</td></tr>
-    <!-- HOOKS -->
-    <tr style="border: none;"><td style="border: none; padding: 2px 10px;">📁 hooks</td><td style="border: none; padding: 2px 10px; color: #6a737d;"># 自定義 React Hooks</td></tr>
-    <!-- PAGES -->
-    <tr style="border: none;"><td style="border: none; padding: 2px 10px;">📁 pages</td><td style="border: none; padding: 2px 10px; color: #6a737d;"># 頁面組成</td></tr>
-    <!-- UTILS -->
-    <tr style="border: none;"><td style="border: none; padding: 2px 10px;">📁 utils</td><td style="border: none; padding: 2px 10px; color: #6a737d;"># 通用工具函式（日期格式化、字串處理等）</td></tr>
-  </table>
-</details>
-
 專案仍在持續重構，因此實際結構可能有所變動。
 
 ## 本機執行
