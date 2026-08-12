@@ -94,13 +94,15 @@ export default function WorkGridCard({
 
             <div className="flex flex-grow flex-col p-3">
                 <h3 className="mb-1 line-clamp-2 text-lg font-semibold text-white">
-                    {work.title_zh || "未知"}
+                    {work.title_zh || work.title_en || work.original || "未知"}
 
-                    {work.work_type_key ===
-                        "movies" &&
-                        work.title_original &&
-                        work.title_original !==
-                        work.title_zh && (
+                    {work.title_original && (
+                        work.title_zh
+                            ? (work.title_original !== work.title_zh && work.title_original !== work.title_en)
+                            : work.title_en
+                                ? (work.title_original !== work.title_en)
+                                : false
+                    ) && (
                             <span className="ml-1 text-sm font-normal text-slate-400">
                                 ({work.title_original})
                             </span>
