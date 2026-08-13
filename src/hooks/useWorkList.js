@@ -51,6 +51,15 @@ const VALID_TABS = new Set([
     "games",
 ]);
 
+const LIST_DISPLAY_STORAGE_KEY =
+    "work-list-display-mode";
+
+const VALID_DISPLAY_MODES =
+    new Set([
+        "grid",
+        "list",
+    ]);
+
 function isSortKeyAvailableForTab(
     sortKey,
     tab
@@ -86,6 +95,22 @@ function getInitialTab() {
     }
 
     return "movies";
+}
+
+function getInitialDisplayMode() {
+    const saved =
+        sessionStorage.getItem(
+            LIST_DISPLAY_STORAGE_KEY
+        );
+
+    if (
+        saved &&
+        VALID_DISPLAY_MODES.has(saved)
+    ) {
+        return saved;
+    }
+
+    return "grid";
 }
 
 export function useWorkList(works) {
@@ -135,7 +160,14 @@ export function useWorkList(works) {
     ]);
 
     const [displayMode, setDisplayMode] =
-        useState("grid");
+        useState(getInitialDisplayMode());
+
+    useEffect(() => {
+        sessionStorage.setItem(
+            LIST_DISPLAY_STORAGE_KEY,
+            displayMode
+        );
+    }, [displayMode]);
 
     const [hoveredWorkId, setHoveredWorkId] =
         useState(null);

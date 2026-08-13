@@ -77,11 +77,15 @@ export default function WorkListItem({
 
             <div className="min-w-0 flex-1">
                 <h3 className="truncate text-base font-bold text-white">
-                    {work.title_zh || "未知"}
+                    {work.title_zh || work.title_en || work.original || "標題未知"}
                 </h3>
 
                 <p className="truncate text-xs text-slate-400">
-                    {work.title_original || "\u00a0"}
+                    {work.title_original &&
+                        work.title_original !== work.title_zh &&
+                        work.title_original !== work.title_en
+                        ? `(${work.title_original})`
+                        : "\u00a0"}
                 </p>
 
                 <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-400">

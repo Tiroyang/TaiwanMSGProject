@@ -86,13 +86,12 @@ export default function WorkHero({
 
         <div className="mt-4">
           <h1 className="text-3xl font-bold text-white">
-            {work.title_zh || "未知作品"}
+            {work.title_zh || "標題未知"}
           </h1>
 
-          {isMovie &&
-            work.title_original &&
-            work.title_original !==
-              work.title_zh && (
+          {work.title_original &&
+             work.title_original !== work.title_zh &&
+             work.title_original !== work.title_en && (
               <p className="text-lg font-medium text-slate-300">
                 原文：{work.title_original}
               </p>

@@ -411,6 +411,7 @@ export default function FilterModal({
                         }
                         filters={tempFilters}
                         dispatch={dispatch}
+                        activeTab={activeTab}
                     />
 
                     <GenreFilterSection
@@ -655,7 +656,11 @@ function CountryFilterSection({
     onPresetChange,
     filters,
     dispatch,
+    activeTab,
 }) {
+    const isGame =
+        activeTab === "games";
+
     return (
         <section className="space-y-3">
             <SectionHeader
@@ -666,33 +671,30 @@ function CountryFilterSection({
                     });
                 }}
             />
+            {!isGame && (
+                <div className="flex flex-wrap gap-2 text-xs">
+                    {[
+                        ["showAll", "全選"],
+                        ["hideAll", "全不選"],
+                        ["foreign", "外國製作"],
+                        ["co", "國際合作"],
+                        ["local", "本土製作"],
+                    ].map(([key, label]) => (
+                        <button
+                            key={key}
+                            type="button"
+                            onClick={() => onPresetChange(key)}
+                            className={`px-3 py-2 rounded-xl border transition ${countryUi.presetUi === key
+                                    ? "bg-sky-600/20 border-sky-500/40 text-sky-200"
+                                    : "bg-slate-900/40 border-slate-800 text-slate-200 hover:bg-slate-800/50"
+                                }`}
+                        >
+                            {label}
+                        </button>
+                    ))}
+                </div>
+            )}
 
-            <div className="flex flex-wrap gap-2 text-xs">
-                {[
-                    ["showAll", "全選"],
-                    ["hideAll", "全不選"],
-                    ["foreign", "外國製作"],
-                    ["co", "國際合作"],
-                    ["local", "本土製作"],
-                ].map(([key, label]) => (
-                    <button
-                        key={key}
-                        type="button"
-                        onClick={() =>
-                            onPresetChange(key)
-                        }
-                        className={[
-                            "px-3 py-2 rounded-xl border transition",
-
-                            countryUi.presetUi === key
-                                ? "bg-sky-600/20 border-sky-500/40 text-sky-200"
-                                : "bg-slate-900/40 border-slate-800 text-slate-200 hover:bg-slate-800/50",
-                        ].join(" ")}
-                    >
-                        {label}
-                    </button>
-                ))}
-            </div>
 
             {countryUi.hintEnabled &&
                 countryUi.hint && (
