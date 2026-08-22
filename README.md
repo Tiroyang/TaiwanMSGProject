@@ -141,7 +141,7 @@
 在專案根目錄建立 `.env.local` 檔案，並填入 API Endpoint：
 ```ini
 # .env.local
-VITE_GOOGLE_SHEET_API_URL=https://script.google.com/macros/s/AKfycbytuJYd3_LhkzHWhkQwJyDVyBpE1BTcNkAY4Bj3dxNHsrHwBasokEZIciOEfuyehLH8SA/exec
+VITE_GOOGLE_SHEET_API_URL=https://script.google.com/macros/s/AKfycbzNqCphnVtt-G9rQNCh-tFjpy2839M_x7Uxwb8A99wLf6sMrL9eUCT-CXTw-mB4GPNnsg/exec
 ```
 
 1. **Clone 專案**
