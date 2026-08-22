@@ -11,6 +11,8 @@ import {
   getTypeClass,
 } from "../../utils/workStyles";
 
+import OtherTitlesPopover from "./OtherTitlesPopover";
+
 export default function WorkHero({
   work,
   imageCount,
@@ -85,9 +87,19 @@ export default function WorkHero({
         </div>
 
         <div className="mt-4">
-          <h1 className="text-3xl font-bold text-white">
-            {work.title_zh || "標題未知"}
-          </h1>
+          <div className="flex items-start gap-1">
+            <h1 className="text-3xl font-bold text-white">
+              {work.title_zh || "中文標題未知"}
+            </h1>
+
+            {work.titles_other && (
+              <OtherTitlesPopover
+                value={
+                  work.titles_other
+                }
+              />
+            )}
+          </div>
 
           {work.title_original &&
              work.title_original !== work.title_zh &&
