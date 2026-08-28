@@ -7,6 +7,7 @@ const SEARCHABLE_FIELDS = [
     "title_zh",
     "title_original",
     "title_en",
+    "titles_other",
     "release_date_simp",
     "release_date",
     "countries",

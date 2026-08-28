@@ -36,6 +36,7 @@ export function normalizeWorks(apiJson) {
         title_zh: item.title_zh ?? "",
         title_original: item.title_original ?? "",
         title_en: item.title_en ?? "",
+        titles_other: item.titles_other ?? "",
         runtime: item.runtime ?? "",
       });
     }

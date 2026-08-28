@@ -18,7 +18,7 @@
 
 ### 電影
 
-收錄已公開發行，片長40分鐘以上，並與台灣關聯的電影作品。
+收錄已公開發行，可以確認製作單位，片長40分鐘以上，並與台灣關聯的電影作品。
 
 包含：
 * 台灣製作
@@ -28,7 +28,7 @@
 
 ### 影集
 
-收錄已公開發行，並與台灣有關聯的影集作品。
+收錄已公開發行，可以確認製作單位，並與台灣有關聯的影集作品。
 
 包含：
 * 台灣製作
@@ -40,7 +40,7 @@
 
 ### 電子遊戲
 
-僅收錄已公開發行的台灣製作電子遊戲作品，不包含大型電玩(街機)作品。
+僅收錄已公開發行，可以確認製作單位的台灣製作電子遊戲作品，不包含大型電玩(街機)作品。
 
 
 ## 目前進度與開發藍圖
@@ -67,10 +67,10 @@
 
 ### 📊 資料蒐集進度
 <details>
-<summary>電影資料進度 (點擊展開)</summary>
+<summary>電影資料進度</summary>
 
-- [ ] 日治台灣
-- [ ] 1945年 ~ 1949年
+- [x] 日治台灣
+- [x] 1945年 ~ 1949年
 - [ ] 1950年 ~ 1959年
 - [ ] 1960年 ~ 1969年
 - [ ] 1970年 ~ 1979年
@@ -82,7 +82,7 @@
 </details>
 
 <details>
-<summary>影集資料進度 (點擊展開)</summary>
+<summary>影集資料進度</summary>
 
 - [ ] 1960年 ~ 1969年
 - [ ] 1970年 ~ 1979年
@@ -94,9 +94,9 @@
 </details>
 
 <details>
-<summary>遊戲資料進度 (點擊展開)</summary>
+<summary>遊戲資料進度</summary>
 
-- [ ] 1980年 ~ 1989年
+- [x] 1980年 ~ 1989年
 - [ ] 1990年 ~ 1999年
 - [ ] 2000年 ~ 2009年
 - [ ] 2010年 ~ 2019年
@@ -141,7 +141,7 @@
 在專案根目錄建立 `.env.local` 檔案，並填入 API Endpoint：
 ```ini
 # .env.local
-VITE_GOOGLE_SHEET_API_URL=https://script.google.com/macros/s/AKfycbytuJYd3_LhkzHWhkQwJyDVyBpE1BTcNkAY4Bj3dxNHsrHwBasokEZIciOEfuyehLH8SA/exec
+VITE_GOOGLE_SHEET_API_URL=https://script.google.com/macros/s/AKfycbwypJ45VeyYx0-FOJs8ZbDnRWFku_Qv7N7w1nPGI5Gt9kwL-MHXJVAUzNeRQCAciJ2Pfw/exec
 ```
 
 1. **Clone 專案**
