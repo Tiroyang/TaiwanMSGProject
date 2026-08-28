@@ -8,10 +8,11 @@ import WorkListHeader from "../components/works/WorkListHeader";
 import WorkListToolbar from "../components/works/WorkListToolbar";
 import WorkResults from "../components/works/WorkResults";
 import WorkTypeTabs from "../components/works/WorkTypeTabs";
-    
 import {
     useWorkList,
 } from "../hooks/useWorkList";
+import WorkListNoticeBanner
+    from "../components/works/WorkListNoticeBanner";
 
 export default function WorkListPage({
     works,
@@ -53,6 +54,12 @@ export default function WorkListPage({
                 }
                 onChange={
                     list.changeTab
+                }
+            />
+
+            <WorkListNoticeBanner
+                activeTab={
+                    list.activeTab
                 }
             />
 
